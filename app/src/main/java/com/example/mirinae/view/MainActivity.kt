@@ -20,11 +20,11 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
     }
 
     override fun onMapViewInitialized(p0: MapView?) {
-        TODO("Not yet implemented")
+        TODO("현재 위치로 이동 및 설정")
     }
 
     override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
-        TODO("Not yet implemented")
+        TODO("마커 생성 및 메모 창")
     }
 
     override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {}
