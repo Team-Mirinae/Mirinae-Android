@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.widget.EditText
 import android.widget.Toast
 import com.example.mirinae.R
 import com.example.mirinae.databinding.ActivityMainBinding
@@ -13,7 +15,9 @@ import com.example.mirinae.viewmodel.MainModel
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
+import net.daum.mf.map.api.MapPOIItem
 
 class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
 
@@ -25,32 +29,48 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
         super.onCreate(savedInstanceState)
         bind = DataBindingUtil.setContentView(this, R.layout.activity_main)
         val mapView = MapView(this)
-        val map = bind.Map
-
 
         bind.lifecycleOwner = this
         bind.model = model
 
         // 권한 체크
-        if (!checkLocationService())
+        if (checkLocationService())
             model.preference(applicationContext, this)
 
         // 현재 위치 추적
         mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading
         // 현재 위치를 기준으로 원 그리기 (5km)
         mapView.setCurrentLocationRadius(5000)
+        mapView.setMapViewEventListener(this)
+        bind.Map.addView(mapView)
 
-        map.addView(mapView)
     }
 
     override fun onMapViewInitialized(p0: MapView?) {
-        TODO("현재 위치로 이동 및 설정")
-
 
     }
 
-    override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
-        TODO("마커 생성 및 메모 창")
+    override fun onMapViewSingleTapped(mapView : MapView?, mPoint: MapPoint?) {
+        Log.e("Touch","터치 입력됨")
+
+        val point = MapPoint.mapPointWithGeoCoord(mPoint!!.mapPointGeoCoord.latitude, mPoint.mapPointGeoCoord.longitude)
+        val editText = EditText(this)
+
+        val dialog = AlertDialog.Builder(this)
+        dialog.setTitle("맛집")
+        dialog.setView(editText)
+
+        dialog.setPositiveButton("저장") { _,_ ->
+            val marker = MapPOIItem()
+            marker.itemName = editText.text.toString()
+            marker.mapPoint = point
+            mapView!!.addPOIItem(marker)
+        }
+        dialog.setNegativeButton("취소") {_,_ -> }
+        dialog.show()
+
+
+
     }
 
     override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {}

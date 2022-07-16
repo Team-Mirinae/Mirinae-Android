@@ -25,13 +25,15 @@ class MainModel : ViewModel() {
                 dialog.setMessage("앱을 이용하시려면 위치 권한을 허용 해 주세요.")
                 dialog.setPositiveButton("확인", DialogInterface.OnClickListener { _, _ ->
                     ActivityCompat.requestPermissions(activity,
-                        arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), requestCode)
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION), requestCode)
                 })
                 dialog.show()
 
             } else {
                 ActivityCompat.requestPermissions(activity,
-                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), requestCode)
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION), requestCode)
             }
         }
     }
