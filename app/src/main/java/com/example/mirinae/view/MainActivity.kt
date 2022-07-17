@@ -22,7 +22,6 @@ import net.daum.mf.map.api.MapPOIItem
 class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
 
     private lateinit var bind : ActivityMainBinding
-
     private val model : MainModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,12 +64,11 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
             marker.itemName = editText.text.toString()
             marker.mapPoint = point
             mapView!!.addPOIItem(marker)
+
+            model.saveRestaurant(editText.text.toString(), "대충 내용", point.mapPointGeoCoord.latitude, point.mapPointGeoCoord.longitude)
         }
         dialog.setNegativeButton("취소") {_,_ -> }
         dialog.show()
-
-
-
     }
 
     override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {}
@@ -86,11 +84,7 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 2000) {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
