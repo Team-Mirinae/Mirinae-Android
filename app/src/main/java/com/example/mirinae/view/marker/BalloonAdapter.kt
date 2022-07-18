@@ -7,13 +7,12 @@ import android.widget.TextView
 import com.example.mirinae.R
 import net.daum.mf.map.api.CalloutBalloonAdapter
 import net.daum.mf.map.api.MapPOIItem
-import java.util.zip.Inflater
 
 class BalloonAdapter (inflater: LayoutInflater) : CalloutBalloonAdapter{
 
-    private val mCalloutBalloon : View = inflater.inflate(R.layout.balloon, null)
-    private val title : TextView = mCalloutBalloon.findViewById(R.id.blo_title)
-    private val content : TextView = mCalloutBalloon.findViewById(R.id.blo_content)
+    private val mCallOutBalloon : View = inflater.inflate(R.layout.balloon, null)
+    private val title : TextView = mCallOutBalloon.findViewById(R.id.blo_title)
+    private val content : TextView = mCallOutBalloon.findViewById(R.id.blo_content)
 
     override fun getCalloutBalloon(p0: MapPOIItem?): View {
         // 마커 클릭시
@@ -22,12 +21,12 @@ class BalloonAdapter (inflater: LayoutInflater) : CalloutBalloonAdapter{
         title.text = text[0]
         content.text = text[1]
 
-        return mCalloutBalloon
+        return mCallOutBalloon
     }
 
     override fun getPressedCalloutBalloon(p0: MapPOIItem?): View {
         // 말풍선 클릭시
-        return mCalloutBalloon
+        return mCallOutBalloon
     }
 
     private fun stringSplit(array : List<String>) : List<String> {
@@ -54,9 +53,12 @@ class BalloonAdapter (inflater: LayoutInflater) : CalloutBalloonAdapter{
     private fun stringAdder (convert : String, length : Int, tmp : CharArray) : String {
         var string = convert
         Log.e("처음 길이", string.length.toString())
-        for (i in tmp) {
-            if (string.isNotEmpty() && string.length % length == 0)
+        for (i : Char in tmp) {
+            if (string.isNotEmpty() && string.length % length == 0) {
                 string += "\n"
+                if (i == ' ') continue
+            }
+
             string += i
         }
         return string

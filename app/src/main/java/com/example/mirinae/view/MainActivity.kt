@@ -19,12 +19,14 @@ import net.daum.mf.map.api.MapView
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import com.example.mirinae.view.marker.BalloonAdapter
+import com.example.mirinae.view.marker.MarkerEventListener
 import net.daum.mf.map.api.MapPOIItem
 
 class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
 
     private lateinit var bind : ActivityMainBinding
     private val model : MainModel by viewModels()
+    private val eventListener = MarkerEventListener(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,23 +36,27 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
         bind.lifecycleOwner = this
         bind.model = model
 
-        // 권한 체크
         if (checkLocationService())
             model.preference(applicationContext, this)
 
-        // 현재 위치 추적
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeadingWithoutMapMoving
-        // 현재 위치를 기준으로 원 그리기 (5km)
+        val location = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val userNowLocation = location.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+        val center = MapPoint.mapPointWithGeoCoord(userNowLocation!!.latitude, userNowLocation.longitude)
+
+        mapView.setMapCenterPoint(center, true)
         mapView.setMapViewEventListener(this)
+
         mapView.setCalloutBalloonAdapter(BalloonAdapter(layoutInflater))
+        mapView.setPOIItemEventListener(eventListener)
+
+        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeadingWithoutMapMoving
+
         bind.Map.addView(mapView)
 //        model.refresh()
 
     }
 
-    override fun onMapViewInitialized(p0: MapView?) {
-
-    }
+    override fun onMapViewInitialized(p0: MapView?) {}
 
     override fun onMapViewSingleTapped(mapView : MapView?, mPoint: MapPoint?) {
         Log.e("Touch","터치 입력됨")
