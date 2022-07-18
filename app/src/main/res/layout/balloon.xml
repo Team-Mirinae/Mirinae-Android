@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="307dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/balloon"
+    >
+
+    <TextView
+        android:id="@+id/blo_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="테스트"
+        android:textColor="#875900"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="15dp"
+        />
+
+    <TextView
+        android:id="@+id/blo_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="test"
+        android:textColor="#875900"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:layout_marginStart="17dp"
+        />
+
+    <TextView
+        android:id="@+id/blo_more_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#875900"
+        android:text="click!"
+        android:layout_gravity="right|bottom"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        />
+
+</LinearLayout>

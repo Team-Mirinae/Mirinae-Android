@@ -1,13 +1,15 @@
 package com.example.mirinae.view
 
 
+import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.EditText
+import android.view.Window
+import android.widget.TextView
 import android.widget.Toast
 import com.example.mirinae.R
 import com.example.mirinae.databinding.ActivityMainBinding
@@ -15,8 +17,8 @@ import com.example.mirinae.viewmodel.MainModel
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
+import com.example.mirinae.view.marker.BalloonAdapter
 import net.daum.mf.map.api.MapPOIItem
 
 class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
@@ -37,11 +39,12 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
             model.preference(applicationContext, this)
 
         // 현재 위치 추적
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading
+        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeadingWithoutMapMoving
         // 현재 위치를 기준으로 원 그리기 (5km)
-        mapView.setCurrentLocationRadius(5000)
         mapView.setMapViewEventListener(this)
+        mapView.setCalloutBalloonAdapter(BalloonAdapter(layoutInflater))
         bind.Map.addView(mapView)
+//        model.refresh()
 
     }
 
@@ -53,22 +56,31 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
         Log.e("Touch","터치 입력됨")
 
         val point = MapPoint.mapPointWithGeoCoord(mPoint!!.mapPointGeoCoord.latitude, mPoint.mapPointGeoCoord.longitude)
-        val editText = EditText(this)
 
-        val dialog = AlertDialog.Builder(this)
-        dialog.setTitle("맛집")
-        dialog.setView(editText)
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog)
+        dialog.show()
 
-        dialog.setPositiveButton("저장") { _,_ ->
+        val accept : TextView = dialog.findViewById(R.id.acp)
+        val cancel : TextView = dialog.findViewById(R.id.cancel)
+
+        accept.setOnClickListener {
+            val title = dialog.findViewById<TextView>(R.id.restaurant_title).text.toString()
+            val content = dialog.findViewById<TextView>(R.id.restaurant_content).text.toString()
+
             val marker = MapPOIItem()
-            marker.itemName = editText.text.toString()
+            marker.itemName = "${title}-${content}"
             marker.mapPoint = point
+            marker.markerType = MapPOIItem.MarkerType.CustomImage
+            marker.customImageResourceId = R.drawable.marker
+
             mapView!!.addPOIItem(marker)
 
-            model.saveRestaurant(editText.text.toString(), "대충 내용", point.mapPointGeoCoord.latitude, point.mapPointGeoCoord.longitude)
+            // model.saveRestaurant(title, content, point.mapPointGeoCoord.latitude, point.mapPointGeoCoord.longitude)
+            dialog.dismiss()
         }
-        dialog.setNegativeButton("취소") {_,_ -> }
-        dialog.show()
+        cancel.setOnClickListener{ dialog.dismiss() }
     }
 
     override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {}
