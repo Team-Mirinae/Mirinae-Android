@@ -10,14 +10,19 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.mirinae.module.ContentType
 import com.example.mirinae.module.RetrofitImpl
 import com.example.mirinae.module.User
 import com.example.mirinae.module.data.RestaurantData
+import com.example.mirinae.module.data.request.SaveRestaurantReq
 import com.example.mirinae.module.data.response.DeleteRes
 import com.example.mirinae.module.data.response.SaveRestaurantRes
 import com.example.mirinae.module.data.response.getAllRestaurantRes
 import com.example.mirinae.module.data.response.getRestaurantRes
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,13 +34,12 @@ class MainModel : ViewModel() {
     private val username = User.name
     private val userId = User.userId
 
-    var job : Job? = null
-
     val markers = MutableLiveData<List<RestaurantData>>()
 
     fun refresh() {
-        getAllMarkers(username!!)
+        getAllMarkers(userId!!)
     }
+
 
     fun preference(context:Context, activity:Activity) {
         if (ContextCompat.checkSelfPermission(context,
@@ -61,24 +65,31 @@ class MainModel : ViewModel() {
         }
     }
 
-    fun saveRestaurant(title : String, content : String, latitude : Double, longitude : Double) {
-        retrofit.saveRestaurant(title, content, latitude, longitude).enqueue(object : Callback<SaveRestaurantRes> {
+    fun saveRestaurant(req : SaveRestaurantReq) {
+        retrofit.saveRestaurant(ContentType.CONTENT_TYPE, User.userId!!,req).enqueue(object : Callback<SaveRestaurantRes> {
             override fun onResponse(call: Call<SaveRestaurantRes>, response: Response<SaveRestaurantRes>) { Log.e("성공", "데이터 저장 성공")}
             override fun onFailure(call: Call<SaveRestaurantRes>, t: Throwable) { t.stackTrace }
-
         })
     }
 
     private fun getAllMarkers(userId : String) {
-        job = CoroutineScope(Dispatchers.IO).launch {
-            retrofit.getAllRestaurant(userId).enqueue(object : Callback<getAllRestaurantRes>{
-                override fun onResponse(call: Call<getAllRestaurantRes>, response: Response<getAllRestaurantRes>) {
+        var job = CoroutineScope(Dispatchers.IO).launch {
+            retrofit.getAllRestaurant(userId).enqueue(object : Callback<getAllRestaurantRes> {
+                override fun onResponse(
+                    call: Call<getAllRestaurantRes>,
+                    response: Response<getAllRestaurantRes>
+                ) {
                     markers.value = response.body()!!.list
+                    Log.e("데이터", response.body()!!.list.toString())
                 }
-                override fun onFailure(call: Call<getAllRestaurantRes>, t: Throwable) { t.stackTrace }
+
+                override fun onFailure(call: Call<getAllRestaurantRes>, t: Throwable) {
+                    t.stackTrace
+                }
             })
         }
     }
+
 
     suspend fun getMarker(title : String) {
         val result =
@@ -96,11 +107,10 @@ class MainModel : ViewModel() {
             }
     }
 
-
     fun deleteMarker(title : String) {
         retrofit.deleteRestaurant(title).enqueue(object : Callback<DeleteRes>{
             override fun onResponse(call: Call<DeleteRes>, response: Response<DeleteRes>) {
-                Log.e("삭제 성공", response.body()!!.msg)
+                Log.e("삭제 성공", "yes")
             }
             override fun onFailure(call: Call<DeleteRes>, t: Throwable) { t.stackTrace }
         })

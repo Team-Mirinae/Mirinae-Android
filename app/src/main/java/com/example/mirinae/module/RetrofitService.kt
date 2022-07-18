@@ -1,5 +1,8 @@
 package com.example.mirinae.module
 
+import com.example.mirinae.module.data.request.SignInReq
+import com.example.mirinae.module.data.request.SignUpReq
+import com.example.mirinae.module.data.request.SaveRestaurantReq
 import com.example.mirinae.module.data.response.*
 import retrofit2.Call
 import retrofit2.http.*
@@ -7,29 +10,26 @@ import retrofit2.http.*
 interface RetrofitService
 {
     @POST("/user/sign-in")
-    fun login(@Field("id") id : String,
-              @Field("pw") pw : String) : Call<UserRes>
+    fun login(@Header("Content-Type") json : String,
+              @Body req : SignInReq) : Call<UserRes>
 
     @POST("/user/sign-up")
-    fun signUp(@Field("id") id : String,
-               @Field("pw") pw : String,
-               @Field("name") name : String
-               ) : Call<UserRes>
+    fun signUp(@Header("Content-Type") json : String,
+                @Body req : SignUpReq) : Call<UserRes>
 
-    @POST("/restaurant/save")
-    fun saveRestaurant(@Field("title") title : String,
-                      @Field("content") content : String,
-                      @Field("latitude") latitude : Double,
-                      @Field("longitude") longitude : Double) : Call<SaveRestaurantRes>
+    @POST("/restaurant/save/{userId}")
+    fun saveRestaurant(@Header("Content-Type") json : String,
+                       @Path("userId") userId: String,
+                       @Body req : SaveRestaurantReq) : Call<SaveRestaurantRes>
 
-    @GET("/restaurant/favorite")
+    @GET("/restaurant/favorite/{userId}")
     fun getAllRestaurant(@Path("userId") userId : String) : Call<getAllRestaurantRes>
 
     @GET("/restaurant/search")
     fun searchRestaurant(@Query("title") title : String) : Call<getRestaurantRes>
 
-    @DELETE("/restaurant/favorite")
-    fun deleteRestaurant(@Path("title") title : String) : Call<DeleteRes>
+    @DELETE("/restaurant/favorite/{title}")
+    fun deleteRestaurant(@Path("title") title: String) : Call<DeleteRes>
 
     @DELETE("/user")
     fun withdrawal (@Path("userId") userId: String ) : Call<DeleteRes>

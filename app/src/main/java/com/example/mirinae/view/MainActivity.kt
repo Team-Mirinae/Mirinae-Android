@@ -5,39 +5,45 @@ import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Window
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import com.example.mirinae.R
 import com.example.mirinae.databinding.ActivityMainBinding
-import com.example.mirinae.viewmodel.MainModel
-import net.daum.mf.map.api.MapPoint
-import net.daum.mf.map.api.MapView
-import androidx.activity.viewModels
-import androidx.databinding.DataBindingUtil
+import com.example.mirinae.module.User
+import com.example.mirinae.module.data.request.SaveRestaurantReq
 import com.example.mirinae.view.marker.BalloonAdapter
 import com.example.mirinae.view.marker.MarkerEventListener
+import com.example.mirinae.viewmodel.MainModel
+import kotlinx.coroutines.*
 import net.daum.mf.map.api.MapPOIItem
+import net.daum.mf.map.api.MapPoint
+import net.daum.mf.map.api.MapView
 
-class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
+class MainActivity : AppCompatActivity(), MapView.MapViewEventListener, MapView.CurrentLocationEventListener {
 
     private lateinit var bind : ActivityMainBinding
     private val model : MainModel by viewModels()
     private val eventListener = MarkerEventListener(this)
+    private lateinit var mapView : MapView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bind = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        val mapView = MapView(this)
-
         bind.lifecycleOwner = this
         bind.model = model
+        mapView = MapView(this)
 
         if (checkLocationService())
             model.preference(applicationContext, this)
+
+        model.refresh()
 
         val location = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val userNowLocation = location.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
@@ -51,9 +57,10 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
 
         mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeadingWithoutMapMoving
 
+        val saveData = SaveRestaurantReq("대소고","급식맛 업음",30.196,32.934)
         bind.Map.addView(mapView)
-//        model.refresh()
 
+        observe()
     }
 
     override fun onMapViewInitialized(p0: MapView?) {}
@@ -83,6 +90,8 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
 
             mapView!!.addPOIItem(marker)
 
+            val save = SaveRestaurantReq(title, content, point.mapPointGeoCoord.latitude, point.mapPointGeoCoord.longitude)
+            model.saveRestaurant(save)
             // model.saveRestaurant(title, content, point.mapPointGeoCoord.latitude, point.mapPointGeoCoord.longitude)
             dialog.dismiss()
         }
@@ -97,6 +106,7 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
     override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {}
     override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {}
 
+
     private fun checkLocationService(): Boolean {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -108,5 +118,27 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 Toast.makeText(this,"권한이 승인되었습니다.",Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onCurrentLocationUpdate(p0: MapView?, p1: MapPoint?, p2: Float) {
+
+    }
+
+    override fun onCurrentLocationDeviceHeadingUpdate(p0: MapView?, p1: Float) {}
+    override fun onCurrentLocationUpdateFailed(p0: MapView?) {}
+    override fun onCurrentLocationUpdateCancelled(p0: MapView?) {}
+
+    fun observe () {
+        model.markers.observe(this, Observer {
+            for(i in it) {
+                val marker = MapPOIItem()
+                marker.itemName = i.title + "-" + i.content
+                marker.mapPoint = MapPoint.mapPointWithGeoCoord(i.coordinate.latitude, i.coordinate.longitude)
+                marker.markerType = MapPOIItem.MarkerType.CustomImage
+                marker.customImageResourceId = R.drawable.marker
+
+                mapView.addPOIItem(marker)
+            }
+        })
     }
 }
