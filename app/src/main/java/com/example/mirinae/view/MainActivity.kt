@@ -57,7 +57,6 @@ class MainActivity : AppCompatActivity(), MapView.MapViewEventListener, MapView.
 
         mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeadingWithoutMapMoving
 
-        val saveData = SaveRestaurantReq("대소고","급식맛 업음",30.196,32.934)
         bind.Map.addView(mapView)
 
         observe()
